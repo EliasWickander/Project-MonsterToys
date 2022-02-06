@@ -67,7 +67,7 @@ public class Player : MonoBehaviour
     {
         SelectionManager.Instance.onObjectSelected += OnObjectSelected;
     }
-
+    
     private void Update()
     {
         if (m_stateMachine != null)

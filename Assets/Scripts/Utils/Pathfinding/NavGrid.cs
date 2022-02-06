@@ -14,6 +14,9 @@ public class NavGrid : MonoBehaviour
     private int m_gridSizeX;
     private int m_gridSizeY;
 
+    public int GridSizeX => m_gridSizeX;
+    public int GridSizeY => m_gridSizeY;
+
     public PolygonCollider2D m_boundsCollider;
 
     private void OnValidate()
@@ -41,7 +44,7 @@ public class NavGrid : MonoBehaviour
                 Vector3 worldPoint = worldBottomLeft + Vector3.right * (x * m_nodeDiameter + m_nodeRadius) +
                                      Vector3.up * (y * m_nodeDiameter + m_nodeRadius);
                 bool isObstacle = !m_boundsCollider.OverlapPoint(worldPoint);
-                m_grid[x, y] = new NavNode(worldPoint, isObstacle);
+                m_grid[x, y] = new NavNode(worldPoint, isObstacle, x, y);
             }
         }
     }
@@ -50,8 +53,8 @@ public class NavGrid : MonoBehaviour
     {
         worldPosition -= transform.position;
         
-        float percentX = (worldPosition.x + m_gridWorldSize.x / 2) / m_gridWorldSize.x;
-        float percentY = (worldPosition.z + m_gridWorldSize.y / 2) / m_gridWorldSize.y;
+        float percentX = (worldPosition.x) / m_gridWorldSize.x;
+        float percentY = (worldPosition.y) / m_gridWorldSize.y;
 
         percentX = Mathf.Clamp01(percentX);
         percentY = Mathf.Clamp01(percentY);
@@ -60,7 +63,58 @@ public class NavGrid : MonoBehaviour
         int y = Mathf.RoundToInt((m_gridSizeY - 1) * percentY);
         return m_grid[x, y];
     }
+    
+    public NavNode GetNode(int x, int y)
+    {
+        if (x >= GridSizeX || y >= GridSizeY || x < 0 || y < 0)
+            return null;
 
+        return m_grid[x, y];
+    }
+
+    public List<NavNode> GetNeighbours(NavNode node)
+    {
+        List<NavNode> neighbours = new List<NavNode>();
+
+        if (node.m_gridPosX > 0)
+        {
+            //Left
+            neighbours.Add(GetNode(node.m_gridPosX - 1, node.m_gridPosY));
+            
+            //Left Down
+            if(node.m_gridPosY > 0)
+                neighbours.Add(GetNode(node.m_gridPosX - 1, node.m_gridPosY - 1));
+            
+            //Left Up
+            if(node.m_gridPosY < m_gridSizeY - 1)
+                neighbours.Add(GetNode(node.m_gridPosX - 1, node.m_gridPosY + 1));
+        }
+
+        if (node.m_gridPosX < m_gridSizeX - 1)
+        {
+            //Right
+            neighbours.Add(GetNode(node.m_gridPosX + 1, node.m_gridPosY));
+            
+            //Right Down
+            if(node.m_gridPosY > 0)
+                neighbours.Add(GetNode(node.m_gridPosX + 1, node.m_gridPosY - 1));
+            
+            //Right Up
+            if(node.m_gridPosY < m_gridSizeY - 1)
+                neighbours.Add(GetNode(node.m_gridPosX + 1, node.m_gridPosY + 1));
+        }
+        
+        //Down
+        if(node.m_gridPosY > 0)
+            neighbours.Add(GetNode(node.m_gridPosX, node.m_gridPosY - 1));
+        
+        //Up
+        if(node.m_gridPosY < m_gridSizeY - 1)
+            neighbours.Add(GetNode(node.m_gridPosX, node.m_gridPosY + 1));
+        
+        return neighbours;
+    }
+    
     private void OnDrawGizmos()
     {
         if (!m_debug)

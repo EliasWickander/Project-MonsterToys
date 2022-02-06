@@ -11,6 +11,9 @@ public class LevelManager : MonoBehaviour
     private Player m_player = null;
     public Player Player => m_player;
 
+    private Pathfinding m_pathFinding = null;
+    public Pathfinding PathFinding => m_pathFinding;
+
     private SceneStateMachine m_sceneStateMachine;
 
     private Scenes m_prevScene;
@@ -32,6 +35,8 @@ public class LevelManager : MonoBehaviour
         
         m_player = FindObjectOfType<Player>();
         m_sceneStateMachine = GetComponent<SceneStateMachine>();
+
+        m_pathFinding = FindObjectOfType<Pathfinding>();
 
     }
 
@@ -59,6 +64,7 @@ public class LevelManager : MonoBehaviour
     
     private void OnSceneEnter()
     {
+        m_pathFinding = FindObjectOfType<Pathfinding>();
         Door[] allDoors = FindObjectsOfType<Door>();
 
         foreach (Door door in allDoors)
